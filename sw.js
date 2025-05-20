@@ -3,7 +3,7 @@
 const CACHE_NAME = 'forge-engine-cache-v1'; // bump this if you update files
 const urlsToCache = [
   './',                      // site root
-  './forge_engine_app.html', // ← updated
+  './index.html', // ← updated
   './manifest.json',
   // add any other local assets here, e.g.:
   // './css/style.css',
