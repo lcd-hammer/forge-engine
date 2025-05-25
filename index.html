@@ -118,6 +118,8 @@ input[type="range"]::-moz-range-thumb {
 /* Slider Box Styles */
 .slider-container { position: relative; }
 #sliderThumbBox {
+  width: 54px;
+  height: 54px;
     position: absolute;
     border: 2px solid #4F46E5;
     box-sizing: content-box;
@@ -887,28 +889,31 @@ input[type="range"]::-moz-range-thumb {
 
 
 
+
 <script>
 (function(){
     const slider = document.getElementById('toolSizeSlider');
     const box = document.getElementById('sliderThumbBox');
     const min = parseFloat(slider.min);
     const max = parseFloat(slider.max);
+    // Fixed box size for max thumb
+    const maxThumbSize = max * 2; // 2px per unit
+    const boxSize = maxThumbSize + 4; // include 2px border each side
+    box.style.width = box.style.height = boxSize + 'px';
     function updateBox(){
         const val = parseFloat(slider.value);
-        // Update thumb size
+        // Update thumb (dot) size
         slider.style.setProperty('--thumb-size', `${val * 2}px`);
-        // Update box size
-        const boxSize = val * 2 + 4;
-        box.style.width = box.style.height = boxSize + 'px';
-        // Calculate position
+        // Compute position
+        const percent = (val - min) / (max - min);
+        const containerRect = slider.parentElement.getBoundingClientRect();
         const sliderRect = slider.getBoundingClientRect();
         const thumbSize = val * 2;
-        const left = sliderRect.left + (sliderRect.width - thumbSize) * ((val - min) / (max - min));
-        const top = sliderRect.top + sliderRect.height / 2;
-        const containerRect = slider.parentElement.getBoundingClientRect();
-        // Position box with center alignment
-        box.style.left = (left - containerRect.left + thumbSize/2) + 'px';
-        box.style.top = (top - containerRect.top) + 'px';
+        // Calculate left coordinate relative to container
+        const left = sliderRect.left - containerRect.left + percent * (sliderRect.width - thumbSize) + thumbSize/2;
+        const top = sliderRect.top - containerRect.top + sliderRect.height/2;
+        box.style.left = left + 'px';
+        box.style.top = top + 'px';
         box.style.transform = 'translate(-50%, -50%)';
     }
     slider.addEventListener('input', updateBox);
@@ -916,5 +921,6 @@ input[type="range"]::-moz-range-thumb {
     updateBox();
 })();
 </script>
+
 </body>
 </html>
