@@ -883,33 +883,33 @@ input[type="range"]::-moz-range-thumb {
         }
     </script>
 
+
+
+
 <script>
 (function(){
     const slider = document.getElementById('toolSizeSlider');
-    const valueDisplay = document.getElementById('toolSizeValue');
     const box = document.getElementById('sliderThumbBox');
     const min = parseFloat(slider.min);
     const max = parseFloat(slider.max);
-    const maxThumbSize = max * 2; // px per unit
-    const boxSize = maxThumbSize + 4; // add 2px border each side
-    box.style.width = box.style.height = boxSize + 'px';
     function updateBox(){
         const val = parseFloat(slider.value);
+        // Update thumb size CSS variable
         document.documentElement.style.setProperty('--thumb-size', `${val * 2}px`);
-        valueDisplay.textContent = val;
+        // Update box size (includes 2px border each side)
+        const boxSize = val * 2 + 4;
+        box.style.width = box.style.height = boxSize + 'px';
+        // Position box: center at slider thumb
         const percent = (val - min) / (max - min);
-        const sliderRect = slider.getBoundingClientRect();
-        const containerRect = slider.parentElement.getBoundingClientRect();
-        const thumbSize = val * 2;
-        const left = percent * (sliderRect.width - thumbSize) + sliderRect.left - containerRect.left - 2;
-        const top = sliderRect.top - containerRect.top - (boxSize - sliderRect.height) / 2;
-        box.style.transform = `translate(${left}px, ${top}px)`;
+        box.style.left = percent * 100 + '%';
+        box.style.top = '50%';
+        box.style.transform = 'translate(-50%, -50%)';
     }
     slider.addEventListener('input', updateBox);
     window.addEventListener('resize', updateBox);
+    // Initialize position
     updateBox();
 })();
 </script>
-
 </body>
 </html>
