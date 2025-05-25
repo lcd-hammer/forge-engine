@@ -886,6 +886,7 @@ input[type="range"]::-moz-range-thumb {
 
 
 
+
 <script>
 (function(){
     const slider = document.getElementById('toolSizeSlider');
@@ -894,20 +895,24 @@ input[type="range"]::-moz-range-thumb {
     const max = parseFloat(slider.max);
     function updateBox(){
         const val = parseFloat(slider.value);
-        // Update thumb size CSS variable
-        document.documentElement.style.setProperty('--thumb-size', `${val * 2}px`);
-        // Update box size (includes 2px border each side)
+        // Update thumb size
+        slider.style.setProperty('--thumb-size', `${val * 2}px`);
+        // Update box size
         const boxSize = val * 2 + 4;
         box.style.width = box.style.height = boxSize + 'px';
-        // Position box: center at slider thumb
-        const percent = (val - min) / (max - min);
-        box.style.left = percent * 100 + '%';
-        box.style.top = '50%';
+        // Calculate position
+        const sliderRect = slider.getBoundingClientRect();
+        const thumbSize = val * 2;
+        const left = sliderRect.left + (sliderRect.width - thumbSize) * ((val - min) / (max - min));
+        const top = sliderRect.top + sliderRect.height / 2;
+        const containerRect = slider.parentElement.getBoundingClientRect();
+        // Position box with center alignment
+        box.style.left = (left - containerRect.left + thumbSize/2) + 'px';
+        box.style.top = (top - containerRect.top) + 'px';
         box.style.transform = 'translate(-50%, -50%)';
     }
     slider.addEventListener('input', updateBox);
     window.addEventListener('resize', updateBox);
-    // Initialize position
     updateBox();
 })();
 </script>
