@@ -83,6 +83,37 @@
             width: 100%; 
         }
     </style>
+<style>
+:root { --thumb-size: 50px; }
+/* Range slider base style */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+  height: 4px;
+}
+/* Dynamic thumb */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  background: #4F46E5;
+  border-radius: 50%;
+  border: 2px solid white;
+  margin-top: calc((4px - var(--thumb-size)) / 2);
+  cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  background: #4F46E5;
+  border-radius: 50%;
+  border: 2px solid white;
+  cursor: pointer;
+}
+</style>
+
 
 /* Slider Box Styles */
 .slider-container { position: relative; }
@@ -101,7 +132,7 @@
         <h1 class="text-3xl font-bold text-center text-indigo-600 mb-6">FORGE ENGINE</h1>
 
         <div class="controls mb-4 space-y-2">
-            <div class="flex items-center space-x-2 slider-container relative">
+            <div class="flex items-center space-x-2 slider-container relative" style="padding: 20px 0;">
                 <label for="toolSizeSlider" class="text-sm font-medium text-slate-700 whitespace-nowrap w-28">Tool Size:</label>
                 <input type="range" id="toolSizeSlider" min="1" max="25" value="10" step="1" class="flex-grow h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
                 <span id="toolSizeValue" class="text-sm font-medium text-slate-700 w-10 text-right">10</span>
@@ -864,6 +895,7 @@
     box.style.width = box.style.height = boxSize + 'px';
     function updateBox(){
         const val = parseFloat(slider.value);
+        document.documentElement.style.setProperty('--thumb-size', `${val * 2}px`);
         valueDisplay.textContent = val;
         const percent = (val - min) / (max - min);
         const sliderRect = slider.getBoundingClientRect();
