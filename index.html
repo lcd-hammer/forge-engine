@@ -83,6 +83,17 @@
             width: 100%; 
         }
     </style>
+
+/* Slider Box Styles */
+.slider-container { position: relative; }
+#sliderThumbBox {
+    position: absolute;
+    border: 2px solid #4F46E5;
+    box-sizing: content-box;
+    border-radius: 0.375rem;
+    pointer-events: none;
+}
+
 </head>
 <body class="bg-slate-100 flex flex-col items-center justify-center min-h-screen p-4 selection:bg-indigo-500 selection:text-white">
 
@@ -90,24 +101,18 @@
         <h1 class="text-3xl font-bold text-center text-indigo-600 mb-6">FORGE ENGINE</h1>
 
         <div class="controls mb-4 space-y-2">
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-2 slider-container relative">
                 <label for="toolSizeSlider" class="text-sm font-medium text-slate-700 whitespace-nowrap w-28">Tool Size:</label>
                 <input type="range" id="toolSizeSlider" min="1" max="25" value="10" step="1" class="flex-grow h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
                 <span id="toolSizeValue" class="text-sm font-medium text-slate-700 w-10 text-right">10</span>
+                <div id="sliderThumbBox" class="pointer-events-none absolute border-2 border-indigo-600 rounded"></div>
             </div>
 
             <div class="flex items-center space-x-2">
                 <label for="dotSpacingSlider" class="text-sm font-medium text-slate-700 whitespace-nowrap w-28">Tool Spacing:</label>
                 <input type="range" id="dotSpacingSlider" min="1" max="100" value="10" class="flex-grow h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
                 <span id="dotSpacingValue" class="text-sm font-medium text-slate-700 w-10 text-right">10</span>
-            </div>
-
-            <div class="flex flex-col items-center py-2 space-y-1">
-                <span class="text-xs text-slate-600">Current Tool Preview:</span>
-                <div id="toolSizeIndicatorWrapper" class=" h-14 bg-slate-200 rounded-md flex justify-center items-center overflow-hidden shadow-inner">
-                    <div id="toolSizeIndicator" class="rounded-full transition-all duration-100 ease-in-out"></div>
-                </div>
-            </div>
+            </div></div>
             
             <div class="my-1">
                 <p class="text-xs text-center font-medium text-slate-600 mb-1.5">Place Pattern in Center (Dot Size from Tool Size):</p>
@@ -846,5 +851,33 @@
             });
         }
     </script>
+
+<script>
+(function(){
+    const slider = document.getElementById('toolSizeSlider');
+    const valueDisplay = document.getElementById('toolSizeValue');
+    const box = document.getElementById('sliderThumbBox');
+    const min = parseFloat(slider.min);
+    const max = parseFloat(slider.max);
+    const maxThumbSize = max * 2; // px per unit
+    const boxSize = maxThumbSize + 4; // add 2px border each side
+    box.style.width = box.style.height = boxSize + 'px';
+    function updateBox(){
+        const val = parseFloat(slider.value);
+        valueDisplay.textContent = val;
+        const percent = (val - min) / (max - min);
+        const sliderRect = slider.getBoundingClientRect();
+        const containerRect = slider.parentElement.getBoundingClientRect();
+        const thumbSize = val * 2;
+        const left = percent * (sliderRect.width - thumbSize) + sliderRect.left - containerRect.left - 2;
+        const top = sliderRect.top - containerRect.top - (boxSize - sliderRect.height) / 2;
+        box.style.transform = `translate(${left}px, ${top}px)`;
+    }
+    slider.addEventListener('input', updateBox);
+    window.addEventListener('resize', updateBox);
+    updateBox();
+})();
+</script>
+
 </body>
 </html>
