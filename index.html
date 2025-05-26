@@ -134,11 +134,16 @@ input[type="range"]::-moz-range-thumb {
         <h1 class="text-3xl font-bold text-center text-indigo-600 mb-6">FORGE ENGINE</h1>
 
         <div class="controls mb-4 space-y-2">
-            <div class="flex items-center space-x-2 slider-container relative" style="padding: 20px 0;">
-                <label for="toolSizeSlider" class="text-sm font-medium text-slate-700 whitespace-nowrap w-28">Tool Size:</label>
-                <input type="range" id="toolSizeSlider" min="1" max="25" value="10" step="1" class="flex-grow h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
-                <span id="toolSizeValue" class="text-sm font-medium text-slate-700 w-10 text-right">10</span>
-                <div id="sliderThumbBox" class="pointer-events-none absolute border-2 border-indigo-600 rounded"></div>
+            
+<div class="slider-container">
+    <label class="text-sm font-medium text-slate-700 whitespace-nowrap w-28 inline-block">Tool Size:</label>
+    <div id="sliderTrack" class="slider-track inline-block align-middle"></div>
+    <span id="sliderValueDisplay" class="text-sm font-medium text-slate-700 w-10 text-right inline-block align-middle">10</span>
+    <div id="sliderBox" class="slider-box">
+        <div id="sliderDot" class="slider-dot" style="width:20px; height:20px;"></div>
+    </div>
+</div>
+
             </div>
 
             <div class="flex items-center space-x-2">
@@ -215,5 +220,71 @@ input[type="range"]::-moz-range-thumb {
     update();
 })();
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const sliderTrack = document.getElementById('sliderTrack');
+    const sliderBox = document.getElementById('sliderBox');
+    const sliderDot = document.getElementById('sliderDot');
+    const sliderValueDisplay = document.getElementById('sliderValueDisplay');
+    const MIN = 1, MAX = 25;
+    let currentValue = MIN;
+    const BOX_SIZE = 50;
+    const trackWidth = sliderTrack.offsetWidth;
+    const maxLeft = trackWidth - BOX_SIZE;
+
+    function updateUI(val) {
+        val = Math.max(MIN, Math.min(MAX, Math.round(val)));
+        currentValue = val;
+        sliderValueDisplay.textContent = val;
+        // Dot size = val*2 px, limit inside box
+        const dotSize = Math.min(val*2, BOX_SIZE - 4);
+        sliderDot.style.width = sliderDot.style.height = dotSize + 'px';
+        // Move box
+        const norm = (val - MIN)/(MAX - MIN);
+        sliderBox.style.left = (norm * maxLeft) + 'px';
+        // Update app internals
+        window.currentToolSize = val;
+        document.getElementById('toolSizeValue').textContent = val;
+        if (typeof updateToolSizeIndicator === 'function') updateToolSizeIndicator();
+    }
+
+    function posToValue(left) {
+        const norm = left / maxLeft;
+        return MIN + norm*(MAX - MIN);
+    }
+
+    sliderBox.addEventListener('mousedown', e => {
+        const startX = e.clientX;
+        const initLeft = sliderBox.offsetLeft;
+        function onMouseMove(me) {
+            let newLeft = initLeft + (me.clientX - startX);
+            newLeft = Math.max(0, Math.min(maxLeft, newLeft));
+            sliderBox.style.left = newLeft + 'px';
+            updateUI(posToValue(newLeft));
+        }
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            sliderBox.style.cursor = 'grab';
+        }
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        sliderBox.style.cursor = 'grabbing';
+        e.preventDefault();
+    });
+
+    sliderTrack.addEventListener('click', e => {
+        const rect = sliderTrack.getBoundingClientRect();
+        let clickX = e.clientX - rect.left - BOX_SIZE/2;
+        clickX = Math.max(0, Math.min(maxLeft, clickX));
+        updateUI(posToValue(clickX));
+    });
+
+    // Initialize
+    updateUI(currentValue);
+});
+</script>
 </body>
+
 </html>
