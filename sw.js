@@ -1,46 +1,61 @@
-// sw.js – Service Worker
+// A unique name for your cache.
+// You should change 'v1' to 'v2', 'v3', etc., whenever you update any of the cached files.
+const CACHE_NAME = 'forge-engine-cache-v2';
 
-const CACHE_NAME = 'forge-engine-cache-v1'; // bump this if you update files
+// The list of files that make up your app's core shell.
 const urlsToCache = [
-  './',                      // site root
-  './index.html', // ← updated
-  './manifest.json',
-  // add any other local assets here, e.g.:
-  // './css/style.css',
-  // './js/app.js',
-  'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  './',                      // Caches the root of your site
+  './index.html',     // Your main HTML file
+  './manifest.json',         // The app manifest
+  // The icons used in the manifest, so they work offline
+  'https://placehold.co/192x192/4f46e5/white?text=Forge&font=inter',
+  'https://placehold.co/512x512/4f46e5/white?text=Forge&font=inter'
 ];
 
-// Install: cache core assets
+// Install Event: This runs when the service worker is first installed.
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Caching core assets');
+        console.log('Service worker is caching core assets.');
         return cache.addAll(urlsToCache);
       })
-      .catch(err => console.error('Install cache failed:', err))
+      .catch(err => {
+        console.error('Service Worker: Cache addAll failed:', err);
+      })
   );
 });
 
-// Activate: clean up old caches if needed
+// Activate Event: This runs after install and is used to clean up old caches.
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
+    caches.keys().then(keys => {
+      return Promise.all(
         keys
-          .filter(key => key !== CACHE_NAME)
-          .map(oldKey => caches.delete(oldKey))
-      )
-    )
+          .filter(key => key !== CACHE_NAME) // Filter out caches that don't match the current name
+          .map(oldKey => caches.delete(oldKey)) // Delete the old caches
+      );
+    })
   );
 });
 
-// Fetch: serve from cache, fall back to network
+// Fetch Event: This runs for every request, allowing the app to work offline.
 self.addEventListener('fetch', event => {
+  // We only want to cache GET requests.
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   event.respondWith(
+    // First, try to find a matching response in the cache.
     caches.match(event.request)
-      .then(cached => cached || fetch(event.request))
+      .then(cachedResponse => {
+        // If a cached response is found, return it.
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        // If not found in cache, fetch it from the network.
+        return fetch(event.request);
+      })
   );
 });
